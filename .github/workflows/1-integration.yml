@@ -1,0 +1,45 @@
+name: "1-Integration"
+
+on:
+  workflow_call:
+    outputs:
+      result:
+        description: "Integration test result"
+        value: ${{ jobs.test.outputs.result }}
+
+jobs:
+  test:
+    name: Test React App
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./my-static-website
+    outputs:
+      result: ${{ steps.set-result.outputs.result }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: './my-static-website/package-lock.json'
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Run ESLint
+      run: npm run lint
+
+    - name: Run Vitest tests
+      run: npm run test
+
+    - name: Build verification
+      run: npm run build
+
+    - name: Set result output
+      id: set-result
+      run: echo "result=success" >> $GITHUB_OUTPUT
